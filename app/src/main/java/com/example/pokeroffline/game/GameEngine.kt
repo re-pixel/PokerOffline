@@ -50,7 +50,6 @@ class GameEngine(private val players: List<Player>, val bigBlind: Int, val small
         }
     }
 
-
     fun play(){
         while(!isGameOver()){
             when(gameStage){
