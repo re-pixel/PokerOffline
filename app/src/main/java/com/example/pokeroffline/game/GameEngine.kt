@@ -1,12 +1,13 @@
 package com.example.pokeroffline.game
 
-class GameEngine(private val players: List<Player>) {
+class GameEngine(private val players: List<Player>, val bigBlind: Int, val smallBlind: Int) {
     private val deck = Deck()
     private val communityCards = mutableListOf<Card>()
     private var pot: Int = 0
     private var gameStage = GameStage.PREFLOP
     private var currentPlayerIndex = 0
     private var isGameActive = false
+    private var remainingPlayers = players
 
     enum class GameStage{
         PREFLOP, FLOP, TURN, RIVER, SHOWDOWN
@@ -20,6 +21,7 @@ class GameEngine(private val players: List<Player>) {
         currentPlayerIndex = 0
         isGameActive = true
         dealHands()
+        play()
     }
 
     private fun dealHands(cardsPerPlayer: Int = 2){
@@ -30,27 +32,16 @@ class GameEngine(private val players: List<Player>) {
         }
     }
 
-
-
-    fun dealFlop(){
-        if(gameStage == GameStage.PREFLOP){
-            repeat(3 ) { communityCards.add(deck.drawCard()!!) }
-            gameStage = GameStage.FLOP
+    fun doTheBetting(){
+        var bettingRound = BettingRound(remainingPlayers, currentPlayerIndex)
+        while(!bettingRound.isRoundOver()){
+            val player = bettingRound.currentPlayer()
+            val action = getPlayerActionFromUI(player)
+            PlayerActionHandler.handlePlayerAction(player, action, bettingRound)
+            remainingPlayers = bettingRound.getRemainingPlayers()
+            pot += bettingRound.getPotIncrement()
         }
-    }
 
-    fun dealTurn(){
-        if(gameStage == GameStage.FLOP){
-            communityCards.add(deck.drawCard()!!)
-            gameStage = GameStage.TURN
-        }
-    }
-
-    fun dealRiver(){
-        if(gameStage == GameStage.TURN){
-            communityCards.add(deck.drawCard()!!)
-            gameStage = GameStage.SHOWDOWN
-        }
     }
 
     fun showHands(){
@@ -58,4 +49,41 @@ class GameEngine(private val players: List<Player>) {
             println("${player.name}: ${player.hand}")
         }
     }
+
+
+    fun play(){
+        while(!isGameOver()){
+            when(gameStage){
+                GameStage.PREFLOP -> {
+                    doTheBetting()
+                    gameStage = GameStage.FLOP
+                }
+                GameStage.FLOP -> {
+                    repeat(3) {communityCards.add(deck.drawCard()!!)}
+                    doTheBetting()
+                    gameStage = GameStage.TURN
+                }
+                GameStage.TURN -> {
+                    communityCards.add(deck.drawCard()!!)
+                    doTheBetting()
+                    gameStage = GameStage.RIVER
+                }
+                GameStage.RIVER -> {
+                    communityCards.add(deck.drawCard()!!)
+                    doTheBetting()
+                    gameStage = GameStage.SHOWDOWN
+                }
+                GameStage.SHOWDOWN -> {
+                    showHands()
+                    val winner = HandEvaluator.determineWinner(remainingPlayers, communityCards)
+                    winner.chips += pot
+                    announceWinner(winner)
+                    break
+                }
+            }
+        }
+    }
+    fun announceWinner(player: Player): String = "The winner is:" + player.name
+
+    fun isGameOver(): Boolean = remainingPlayers.size == 1
 }
