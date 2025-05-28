@@ -36,7 +36,7 @@ class GameEngine(private val players: List<Player>, val bigBlind: Int, val small
         var bettingRound = BettingRound(remainingPlayers, currentPlayerIndex)
         while(!bettingRound.isRoundOver()){
             val player = bettingRound.currentPlayer()
-            val action = getPlayerActionFromUI(player)
+            val action = PlayerAction.Check //getPlayerActionFromUI(player)
             PlayerActionHandler.handlePlayerAction(player, action, bettingRound)
             remainingPlayers = bettingRound.getRemainingPlayers()
             pot += bettingRound.getPotIncrement()
