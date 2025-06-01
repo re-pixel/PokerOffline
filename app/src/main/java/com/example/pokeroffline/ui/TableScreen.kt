@@ -1,42 +1,79 @@
 package com.example.pokeroffline.ui
 
+import android.graphics.Rect
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.layout.onGloballyPositioned
+import androidx.compose.ui.layout.positionInRoot
+import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
+import com.example.pokeroffline.R
+import kotlin.math.roundToInt
 
 @Preview
 @Composable
 fun PokerTableScreen() {
+    val tableBounds = remember{mutableStateOf<Rect?>(null)}
+
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .background(Color(0,0,0,50)) // Dark green table
+            .background(Color(0, 0, 0, 50))
     ) {
 
-        Table(modifier = Modifier.align(Alignment.Center))
+        Table(
+            modifier = Modifier
+                .align(Alignment.Center)
+                .onGloballyPositioned { coords ->
+                    val pos = coords.positionInRoot()
+                    val size = coords.size
+                    tableBounds.value = Rect(
+                        pos.x.toInt(),
+                        pos.y.toInt(),
+                        (pos.x + size.width).toInt(),
+                        (pos.y + size.height).toInt()
+                    )
+                }
+        )
+        tableBounds.value?.let { bounds ->
+            val density = LocalDensity.current
+            val centerX = (bounds.left + bounds.right) / 2
+            val centerY = (bounds.top + bounds.bottom) / 2
+            val width = bounds.width()
+            val height = bounds.height()
 
-        // Top players
-        PlayerCircle(modifier = Modifier.align(Alignment.TopStart).padding(16.dp))
-        PlayerCircle(modifier = Modifier.align(Alignment.TopEnd).padding(16.dp))
+            // Top row
+            PlayerSeat(x = centerX - width * 0.25f, y = bounds.top - 60f)
+            PlayerSeat(x = centerX + width * 0.25f, y = bounds.top - 60f)
 
-        // Side players
-        PlayerCircle(modifier = Modifier.align(Alignment.CenterStart))
-        PlayerCircle(modifier = Modifier.align(Alignment.CenterEnd))
+            // Bottom row
+            PlayerSeat(x = centerX - width * 0.25f, y = bounds.bottom + 20f)
+            PlayerSeat(x = centerX + width * 0.25f, y = bounds.bottom + 20f)
 
-        // Bottom players
-        PlayerCircle(modifier = Modifier.align(Alignment.BottomStart).padding(16.dp))
-        PlayerCircle(modifier = Modifier.align(Alignment.BottomEnd).padding(16.dp))
+            // Left side
+            PlayerSeat(x = bounds.left - 80f, y = centerY - height * 0.25f)
+
+            // Right side
+            PlayerSeat(x = bounds.right + 20f, y = centerY - height * 0.25f)
+        }
     }
 }
+
 
 @Composable
 fun Table(modifier: Modifier = Modifier){
@@ -44,8 +81,14 @@ fun Table(modifier: Modifier = Modifier){
         modifier = modifier
             .fillMaxHeight(0.5f)
             .fillMaxWidth(0.6f)
-            .background(Color(0,255,0,50), shape=RoundedCornerShape(10.dp))
+            .background(Color(0, 255, 0, 50), shape = RoundedCornerShape(10.dp))
     ){
+//        Image(
+//            painter = painterResource(id = R.drawable.table),
+//            contentDescription = null,
+//            contentScale = ContentScale.Crop,
+//            modifier = Modifier.matchParentSize()
+//        )
 
         Row(
             modifier = Modifier
@@ -61,13 +104,19 @@ fun Table(modifier: Modifier = Modifier){
 }
 
 @Composable
-fun PlayerCircle(modifier: Modifier = Modifier) {
+fun PlayerSeat(x: Float, y: Float) {
     Box(
-        modifier = modifier
+        modifier = Modifier
+            .offset { IntOffset(x.roundToInt(), y.roundToInt()) }
             .size(60.dp)
-            .background(Color.White, shape = CircleShape)
-            .border(2.dp, Color.Black, CircleShape)
-    )
+    ) {
+        Image(
+            painter = painterResource(id = R.drawable.card_backside),
+            contentDescription = null,
+            contentScale = ContentScale.Fit,
+            modifier = Modifier.matchParentSize()
+        )
+    }
 }
 
 @Composable
