@@ -11,7 +11,6 @@ import android.content.Intent
 import android.content.IntentFilter
 import android.content.pm.PackageManager
 import androidx.activity.result.ActivityResultLauncher
-import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 
 class BluetoothActions(private val context: Context) {
@@ -134,7 +133,6 @@ class BluetoothActions(private val context: Context) {
         this.discoveryCallback = callback
 
         try {
-            // Register receiver if not already registered
             if (!isReceiverRegistered) {
                 val filter = IntentFilter().apply {
                     addAction(BluetoothDevice.ACTION_FOUND)
@@ -144,13 +142,11 @@ class BluetoothActions(private val context: Context) {
                 isReceiverRegistered = true
             }
 
-            // Cancel any previous discovery
             bluetoothAdapter?.let { adapter ->
                 if (adapter.isDiscovering) {
                     adapter.cancelDiscovery()
                 }
 
-                // Start discovery
                 val discoveryStarted = adapter.startDiscovery()
 
                 if (discoveryStarted) {

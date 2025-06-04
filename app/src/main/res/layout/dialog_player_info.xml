@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:padding="24dp">
+
+    <EditText
+        android:id="@+id/edit_player_name"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="Enter your name"
+        android:inputType="textPersonName" />
+
+    <EditText
+        android:id="@+id/edit_player_chips"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="Enter starting stack (chips)"
+        android:inputType="number"
+        android:layout_marginTop="16dp"/>
+</LinearLayout>

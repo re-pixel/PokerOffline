@@ -1,6 +1,7 @@
 package com.example.pokeroffline
 
 import android.Manifest
+import android.app.AlertDialog
 import android.bluetooth.BluetoothAdapter
 import android.bluetooth.BluetoothDevice
 import android.bluetooth.BluetoothManager
@@ -11,7 +12,9 @@ import android.content.IntentFilter
 import android.content.pm.PackageManager
 import android.os.Build
 import android.os.Bundle
+import android.view.LayoutInflater
 import android.widget.Button
+import android.widget.EditText
 import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.annotation.RequiresPermission
@@ -24,6 +27,8 @@ class MainActivity : AppCompatActivity() {
     private lateinit var hostGameButton: Button
     private lateinit var joinGameButton: Button
     private lateinit var bluetoothActions: BluetoothActions
+
+    private var pendingAction: Action? = null
 
     private val requestBluetoothPermission = registerForActivityResult(
         ActivityResultContracts.RequestMultiplePermissions()
@@ -101,11 +106,11 @@ class MainActivity : AppCompatActivity() {
         joinGameButton = findViewById<Button>(R.id.button_join_game)
 
         hostGameButton.setOnClickListener {
-            hostGame()
+            showPlayerInfoDialog(Action.HOST)
         }
 
         joinGameButton.setOnClickListener {
-            joinGame()
+            showPlayerInfoDialog(Action.JOIN)
         }
 
         if (!bluetoothActions.isBluetoothSupported()) {
@@ -116,6 +121,34 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
+    private fun showPlayerInfoDialog(action: Action) {
+        val dialogView = LayoutInflater.from(this).inflate(R.layout.dialog_player_info, null)
+        val nameEditText = dialogView.findViewById<EditText>(R.id.edit_player_name)
+        val chipsEditText = dialogView.findViewById<EditText>(R.id.edit_player_chips)
+
+        AlertDialog.Builder(this)
+            .setTitle(if (action == Action.HOST) "Host Game" else "Join Game")
+            .setView(dialogView)
+            .setPositiveButton("OK") { _, _ ->
+                val playerName = nameEditText.text.toString().trim()
+                val chips = chipsEditText.text.toString().toIntOrNull() ?: 0
+                if (playerName.isEmpty() || chips <= 0) {
+                    Toast.makeText(this, "Please enter a valid name and starting stack", Toast.LENGTH_SHORT).show()
+                    return@setPositiveButton
+                }
+                onPlayerInfoEntered(action, playerName, chips)
+            }
+            .setNegativeButton("Cancel", null)
+            .show()
+    }
+
+    private fun onPlayerInfoEntered(action: Action, playerName: String, chips: Int) {
+        when (action) {
+            Action.HOST -> hostGame()
+            Action.JOIN -> joinGame()
+            else -> {}
+        }
+    }
 
     private fun hostGame(){
         currentAction = Action.HOST

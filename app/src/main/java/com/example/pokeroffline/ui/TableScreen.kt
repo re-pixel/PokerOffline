@@ -27,7 +27,7 @@ import kotlin.math.roundToInt
 
 @Preview
 @Composable
-fun PokerTableScreen() {
+fun PokerTableScreen(playerArrangement: () -> Unit = {}) {
     val tableBounds = remember{mutableStateOf<Rect?>(null)}
 
     Box(
@@ -110,12 +110,12 @@ fun PlayerSeat(x: Float, y: Float) {
             .offset { IntOffset(x.roundToInt(), y.roundToInt()) }
             .size(60.dp)
     ) {
-        Image(
-            painter = painterResource(id = R.drawable.card_backside),
-            contentDescription = null,
-            contentScale = ContentScale.Fit,
-            modifier = Modifier.matchParentSize()
-        )
+//        Image(
+//            painter = painterResource(id = R.drawable.card_backside),
+//            contentDescription = null,
+//            contentScale = ContentScale.Fit,
+//            modifier = Modifier.matchParentSize()
+//        )
     }
 }
 
